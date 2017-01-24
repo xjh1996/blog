@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.test.Dao.BlogMapper" >
+  <resultMap id="BaseResultMap" type="com.test.bean.Blog" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="click_times" property="clickTimes" jdbcType="INTEGER" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="comment_times" property="commentTimes" jdbcType="INTEGER" />
+    <result column="agree_with_times" property="agreeWithTimes" jdbcType="INTEGER" />
+    <result column="pic_url" property="picUrl" jdbcType="VARCHAR" />
+    <result column="content" property="content" jdbcType="LONGVARCHAR" />
+    <association property="type" javaType="com.test.bean.Type" column="type_id">
+  		<id column="type_id" property="id"/>
+  		<result column="type_name" property="typename"/>
+  	</association>
+    <collection property="commentList" ofType="com.test.bean.Comment" column="blog_id">  
+	    <id column="comment_id" property="id" jdbcType="INTEGER" />                     
+	    <result column="username" property="username" jdbcType="VARCHAR" />
+	    <result column="email" property="email" jdbcType="VARCHAR" />
+	    <result column="c_create_time" property="createTime" jdbcType="TIMESTAMP" />
+	    <result column="c_agree_with_times" property="agreeWithTimes" jdbcType="INTEGER" />
+	    <result column="c_content" property="content" jdbcType="LONGVARCHAR" />
+  	</collection>  
+
+  </resultMap>
+   <select id="findBlogByIdWithComment" parameterType="int" resultMap="BaseResultMap">  
+   		select b.*,
+   		c.id comment_id ,
+        c.username,
+        c.email,
+        c.create_time c_create_time,
+        c.agree_with_times c_agree_with_times,
+        c.content c_content,
+        t.id type_id,
+        t.typename type_name
+		from blog b,comment c,type t 
+		where b.id=c.blog_id
+		and b.id=#{id} 
+		and t.id=b.type_id
+  </select> 
+  <select id="findBlogById" parameterType="int" resultMap="BaseResultMap">  
+   		select blog.*,t.id type_id,t.typename type_name from blog,type t where blog.id=#{id} and t.id=blog.type_id
+  </select> 
+   <select id="findBlogByType" parameterType="com.test.bean.Type" resultMap="BaseResultMap">  
+   		select blog.*,t.id type_id,t.typename type_name from blog,type t where blog.type_id=#{id} and t.id=blog.type_id
+  </select> 
+   <select id="getBlogList" resultMap="BaseResultMap">  
+   		select blog.*,t.id type_id,t.typename type_name from blog,type t where t.id=blog.type_id
+  </select> 
+   <select id="findBlogByWord" parameterType="java.lang.String" resultMap="BaseResultMap">  
+   		select blog.*,t.id type_id,t.typename type_name from blog,type t
+   		where (blog.content LIKE CONCAT(CONCAT('%', #{text}), '%')
+   		or blog.title LIKE CONCAT(CONCAT('%', #{text}), '%')) and t.id=blog.type_id
+  </select> 
+  <delete id="deleteById" parameterType="java.lang.Integer">
+    delete from blog
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.test.bean.Blog">
+    insert into blog (id, title, type_id, 
+      click_times, create_time, comment_times, 
+      agree_with_times, pic_url, content)
+    values (#{id,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, #{type.id,jdbcType=INTEGER}, 
+      #{clickTimes,jdbcType=INTEGER}, #{createTime,jdbcType=TIMESTAMP}, #{commentTimes,jdbcType=INTEGER}, 
+      #{agreeWithTimes,jdbcType=INTEGER}, #{picUrl,jdbcType=VARCHAR}, #{content,jdbcType=LONGVARCHAR})      
+  </insert>
+  <update id="updateById" parameterType="com.test.bean.Blog">
+    update blog
+    set title = #{title,jdbcType=VARCHAR},
+      type_id = #{type.id,jdbcType=INTEGER},
+      click_times = #{clickTimes,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      comment_times = #{commentTimes,jdbcType=INTEGER},
+      agree_with_times = #{agreeWithTimes,jdbcType=INTEGER},
+      pic_url = #{picUrl,jdbcType=VARCHAR},
+      content = #{content,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
