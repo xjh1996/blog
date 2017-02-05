@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/ued")
 public class UEditorController {
+    //ueditor的服务函数
 	@RequestMapping(value="/config")
     public void config(HttpServletRequest request, HttpServletResponse response) {
  

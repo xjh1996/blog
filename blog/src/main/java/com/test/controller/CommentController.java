@@ -22,65 +22,69 @@ import com.test.service.ITypeService;
 
 @Controller
 public class CommentController {
-	
-	@Resource
-	private IBlogService blogService;
-	
 
-	
-	@Resource
-	private ICommentService commentService;
-	
-	private void refreshCommentTimes(int id) {
-		Blog blog=blogService.getBlogById(id);
-		List<Comment> comments=commentService.selectByBlogId(id);
-		blog.setCommentTimes(comments.size());
-		blogService.updateBlog(blog);
-	}
+    //两个spring标签注入的service
+    @Resource
+    private IBlogService blogService;
 
-	@RequestMapping(value="comment/{id}",method=RequestMethod.DELETE)
-	public String deleteOneComment(HttpServletRequest request,Model model,@PathVariable("id") Integer id){
-		HttpSession session=request.getSession(); 
-		String[] urlString=request.getHeader("Referer").split("/");
-		int blogId=Integer.parseInt(urlString[urlString.length-1]);
-		
-		
-		String username=(String)session.getAttribute("username");
-		
-		if(username!=null){
-			commentService.deleteCommentById(id);
-			refreshCommentTimes(blogId);
-		}
-		return "redirect:/manager/manageComment/"+urlString[urlString.length-1];	
-		
-	}
-	
-	
-	@RequestMapping(value="comment",method=RequestMethod.POST)
-	public String addOneComment(HttpServletRequest request,Model model){
-		
-		String email=request.getParameter("email");
-		//System.out.println(Integer.parseInt(request.getParameter("blogId")));
-		
-		int blogId=Integer.parseInt(request.getParameter("blogId"));
-		String content=request.getParameter("content");
-		String username=request.getParameter("username");
-		
-		Comment comment = new Comment();
-		
-		comment.setAgreeWithTimes(0);
-		comment.setBlogId(blogId);
-		comment.setContent(content);
-		comment.setCreateTime(new Date());
-		comment.setEmail(email);
-		comment.setUsername(username);
-		
-		commentService.addComment(comment);
-		
-		refreshCommentTimes(blogId);
-		
-		return "redirect:/"+blogId;	
-	}
-	
-	
+    @Resource
+    private ICommentService commentService;
+
+    //blog的评论数和评论表中实际评论数达成一致
+    private void refreshCommentTimes(int id) {
+        //获得博客文章及其评论
+        Blog blog = blogService.getBlogById(id);
+        List<Comment> comments = commentService.selectByBlogId(id);
+
+        //更新评论数
+        blog.setCommentTimes(comments.size());
+        blogService.updateBlog(blog);
+    }
+
+    //删评论，resultful风格
+    @RequestMapping(value = "comment/{id}", method = RequestMethod.DELETE)
+    public String deleteOneComment(HttpServletRequest request, Model model, @PathVariable("id") Integer id) {
+        //得到comment相关的blog的id其实好像在comment.blogId里有,没优化好，
+        // 不过这样可以避免null的情况
+        String[] urlString = request.getHeader("Referer").split("/");
+        int blogId = Integer.parseInt(urlString[urlString.length - 1]);
+
+        HttpSession session = request.getSession();
+        String username = (String) session.getAttribute("username");
+
+        if (username != null) {
+            commentService.deleteCommentById(id);
+            refreshCommentTimes(blogId);
+        }
+        return "redirect:/manager/manageComment/" + urlString[urlString.length - 1];
+
+    }
+
+    //添加评论，resultful风格
+    @RequestMapping(value = "comment", method = RequestMethod.POST)
+    public String addOneComment(HttpServletRequest request, Model model) {
+
+        int blogId = Integer.parseInt(request.getParameter("blogId"));
+        //获得评论者的相关内容
+        String email = request.getParameter("email");
+        String content = request.getParameter("content");
+        String username = request.getParameter("username");
+
+        Comment comment = new Comment();
+
+        comment.setAgreeWithTimes(0);
+        comment.setBlogId(blogId);
+        comment.setContent(content);
+        comment.setCreateTime(new Date());
+        comment.setEmail(email);
+        comment.setUsername(username);
+
+        commentService.addComment(comment);
+        //更新相关博客的评论数
+        refreshCommentTimes(blogId);
+
+        return "redirect:/" + blogId;
+    }
+
+
 }

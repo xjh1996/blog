@@ -34,6 +34,7 @@ import com.test.service.ITypeService;
 
 @Controller
 public class BlogController {
+	//四个spring标签注入的service
 	@Resource
 	private IBlogService blogService;
 	
@@ -45,26 +46,31 @@ public class BlogController {
 	
 	@Resource
 	private IInfoService infoService;
-	
+
+	//一个用于管理博客每页条数的变量
 	private int pageCount=6;
 	
 	
-	
+	//主页显示
 	@RequestMapping("index")
 	public String toIndex(Model model){
+		//主页取分页的第一页内容
 		int pageNum=1;
 		List<Blog> blogs=this.blogService.getAllBlogs();
 		int allpages=(blogs.size()/pageCount)+(blogs.size()%pageCount==0?0:1);
-		
+		//倒序排列原以为可以按照日期从新到老排列，
+		// 没想到没加order by不理想
 		Collections.reverse(blogs);
+		//在所有blog中取出第一页内容，本可以用mysql的sql语句实现分页，不过我目前的实现方式还好，先不优化了
 		blogs=blogs.subList((pageNum-1)*pageCount, pageNum*pageCount>blogs.size()?blogs.size():pageNum*pageCount);
-		model.addAttribute("blogs",blogs);
-		
+		//获取所有文章种类加入供视图渲染使用
 		List<Type> types=this.typeService.getTypes();
-		
+		//拿到网站相关参数，访问量什么的
 		Info info=this.infoService.getInfoById(1);
+
+		//将所有要用到的加入model
 		model.addAttribute("info", info);
-		
+		model.addAttribute("blogs",blogs);
 		model.addAttribute("types",types);
 		model.addAttribute("pagenum",pageNum);
 		model.addAttribute("allpages",allpages);
@@ -74,26 +80,35 @@ public class BlogController {
 	
 	@RequestMapping("searchByType/{id}")
 	public String toSearchByType(Model model,@PathVariable("id") Integer id){
+		//获取所有文章种类加入供视图渲染使用
 		List<Type> types=this.typeService.getTypes();
-		model.addAttribute("types",types);
+		//根据类型id找博客文章
 		Type type=new Type();
 		type.setId(id);
 		List<Blog> blogs=this.blogService.findBlogsByType(type);
-		model.addAttribute("blogs",blogs);		
+		//拿到网站相关参数，访问量什么的
 		Info info=this.infoService.getInfoById(1);
+		//将所有要用到的加入model
 		model.addAttribute("info", info);
+		model.addAttribute("types",types);
+		model.addAttribute("blogs",blogs);
 		return "searchByType";		
 	}
 	
 	@RequestMapping("searchByWord")
 	public String toSearchByWord(Model model,HttpServletRequest request) throws UnsupportedEncodingException{
+		//不知为何查找信息传到服务器时出现中文乱码，没找到原因，就这么解决吧
 		String word=new String(request.getParameter("word").getBytes("ISO-8859-1"),"UTF-8");
-		
+		//根据关键词查找文章，标题和内容均可
 		List<Blog> blogs=this.blogService.findBlogsByWord(word);
+		//获取所有文章种类加入供视图渲染使用
 		List<Type> types=this.typeService.getTypes();
+		//拿到网站相关参数，访问量什么的
+		Info info=this.infoService.getInfoById(1);
+
+		//将所有要用到的加入model
 		model.addAttribute("blogs",blogs);	
 		model.addAttribute("types",types);
-		Info info=this.infoService.getInfoById(1);
 		model.addAttribute("info", info);
 		return "index";		
 	}
@@ -108,33 +123,42 @@ public class BlogController {
 		return "showBlog";
 		
 	}*/
-	
+	//具体显示某篇博客
 	@RequestMapping(value="/{id}",method=RequestMethod.GET)
 	public String toOneBlog(HttpServletRequest request,Model model,@PathVariable("id") Integer id){
+		//获取所有文章种类加入供视图渲染使用
 		List<Type> types=this.typeService.getTypes();
-		model.addAttribute("types",types);
+		//获得根据id这篇博客
 		Blog blog=this.blogService.getBlogById(id);
-		model.addAttribute("blog",blog);
-		blog.setClickTimes(blog.getClickTimes()+1);
-		
+		//计算一次点击量
+		blog.setClickTimes(blog.getClickTimes() + 1);
+		//获得文章评论
 		List<Comment> comments=commentService.selectByBlogId(blog.getId());
-		model.addAttribute("comments",comments);
+		//刷新一次博客评论数
 		blog.setCommentTimes(comments.size());
-		blogService.updateBlog(blog);
+		this.blogService.updateBlog(blog);
+		//拿到网站相关参数，访问量什么的
 		Info info=this.infoService.getInfoById(1);
+
+		//将所有要用到的加入model
+		model.addAttribute("types",types);
+		model.addAttribute("blog",blog);
+		model.addAttribute("comments", comments);
 		model.addAttribute("info", info);
 		return "showBlog";
 		
 	}
-	
+
+	//删除某篇博客
 	@RequestMapping(value="/{id}",method=RequestMethod.DELETE)
 	public String deleteOneBlog(HttpServletRequest request,Model model,@PathVariable("id") Integer id){
+		//身份验证
 		HttpSession session=request.getSession(); 
-		
 		String username=(String)session.getAttribute("username");
-
 		if(username!=null){
+			//根据ID删除相关博客和评论
 			blogService.deleteBlogById(id);
+			//删评论这种方式并不好，建议加条根据blogid删评论的sql语句
 			List<Type> types=typeService.getTypes();
 			for (int i = 0; i < types.size(); i++) {
 				if(blogService.findBlogsByType(types.get(i))==null||blogService.findBlogsByType(types.get(i)).size()<1){
@@ -146,18 +170,20 @@ public class BlogController {
 		return "redirect:/manager";	
 		
 	}
-	
+	//修改某篇博客
 	@RequestMapping(value="/{id}",method=RequestMethod.PUT)
 	public String updateOneBlog(HttpServletRequest request,Model model,@PathVariable("id") Integer id){
+		//获得这篇博客
 		Blog blog=blogService.getBlogById(id);
-		
-		HttpSession session=request.getSession(); 
-		
+		//身份验证
+		HttpSession session=request.getSession();
 		String username=(String)session.getAttribute("username");
 		if(username!=null){
+			//拿到最新的文章相关参数并更新文章
 			String title=request.getParameter("title");
 			String content=request.getParameter("content");
 			String typename=request.getParameter("typename");
+			//若修改了类型且类型不存在则新建，若存在，则取出
 			Type type=typeService.getTypeByName(typename);
 			if (type==null) {
 				type=new Type();
@@ -169,6 +195,7 @@ public class BlogController {
 			blog.setContent(content);
 			blog.setType(type);
 			blogService.updateBlog(blog);
+			//删去类型下无博客的类型
 			List<Type> types=typeService.getTypes();
 			for (int i = 0; i < types.size(); i++) {
 				if(blogService.findBlogsByType(types.get(i))==null||blogService.findBlogsByType(types.get(i)).size()<1){
@@ -180,33 +207,37 @@ public class BlogController {
 		return "redirect:/manager";	
 	}
 	
-	
+	//博客分页服务函数，建议分页写一个单独的函数降低耦合度
 	@RequestMapping(value="/page/{pageNum}",method=RequestMethod.GET)
 	public String getBlogByPage(HttpServletRequest request,Model model,@PathVariable("pageNum") Integer pageNum){
-		List<Blog> blogs=this.blogService.getAllBlogs();
+
+		//获取所有文章种类加入供视图渲染使用
 		List<Type> types=this.typeService.getTypes();
+		//先拿到所有博客再根据当前页选取
+		List<Blog> blogs=this.blogService.getAllBlogs();
 		int allpages=(blogs.size()/pageCount)+(blogs.size()%pageCount==0?0:1);
 		Collections.reverse(blogs);
 		blogs=blogs.subList((pageNum-1)*pageCount, pageNum*pageCount>blogs.size()?blogs.size():pageNum*pageCount);
-
+		//将所有要用到的加入model
 		model.addAttribute("blogs",blogs);
 		model.addAttribute("types",types);
 		model.addAttribute("pagenum",pageNum);
 		model.addAttribute("allpages",allpages);
 		return "index";	
 	}
-	
+	//新增博客
 	@RequestMapping(value="/post",method=RequestMethod.POST)
 	public String addOneBlog(HttpServletRequest request,Model model) throws IOException{
-		HttpSession session=request.getSession(); 
-		
+		//身份验证
+		HttpSession session=request.getSession();
 		String username=(String)session.getAttribute("username");
-		
 		if(username!=null){
+			//获取相关参数
 			String title=request.getParameter("title");
-			System.out.println(title);
+			//System.out.println(title);
 			String typename=request.getParameter("typename");
 			String content=request.getParameter("content");
+			//若修改了类型且类型不存在则新建，若存在，则取出
 			Type type=typeService.getTypeByName(typename);
 			if (type==null) {
 				type=new Type();
@@ -214,6 +245,7 @@ public class BlogController {
 				typeService.addType(type);
 				type=typeService.getTypeByName(typename);
 			}
+			//新增博客实现
 			Blog blog=new Blog();
 			blog.setAgreeWithTimes(0);
 			blog.setClickTimes(0);
@@ -222,15 +254,13 @@ public class BlogController {
 			blog.setCreateTime(new Date());
 			blog.setTitle(title);
 			blog.setType(type);
-			
 			Boolean flag=blogService.insert(blog);
-			
-			System.out.println(flag);
+			//System.out.println(flag);
 			
 		}
 		return "redirect:/manager";	
 	}
-	
+	//json数据测试用
 	@RequestMapping("/xmlOrJson")
 	@ResponseBody
 	public Map<String, Object> xmlOrJson() {
@@ -238,7 +268,7 @@ public class BlogController {
 	    map.put("list", blogService.getAllBlogs());
 	    return map;
 	}
-	
+	//json数据测试用
 	@RequestMapping("/blogJson/{id}")
 	@ResponseBody
 	public Map<String, Object> blogJson(@PathVariable("id") Integer id) {
@@ -246,6 +276,7 @@ public class BlogController {
 	    map.put("list", blogService.getBlogById(id));
 	    return map;
 	}
+	//点赞并返回点赞数（json格式）
 	@RequestMapping(value="/addagree/{id}")
 	@ResponseBody
 	public Map<String, Object> addagree(HttpServletRequest request,@PathVariable("id") Integer id){
@@ -256,30 +287,39 @@ public class BlogController {
 		map.put("agreetimes", blog.getAgreeWithTimes());
 		return map;
 	}
-	
+	//文章封面上传
 	@RequestMapping(value="/imageupload/{id}",method=RequestMethod.POST)
 	public String imageupload(MultipartFile file,HttpServletRequest request,Model model,HttpSession session,@PathVariable("id") Integer id) throws IOException{
-		
+		//根据id得到这篇博客
 		Blog blog=blogService.getBlogById(id);
+		//登录验证
 		String username=(String)session.getAttribute("username");
-
 		if(username!=null){
 			if (file!=null) {
+				//得到上传封面文件名
 				String fileName=file.getOriginalFilename();
+				//得到后缀名
 				String type=fileName.indexOf(".")!=-1?fileName.substring(fileName.lastIndexOf(".")+1, fileName.length()):null;
+				//若后缀名为gif，png或jpg则认为是图片，可以添加
 				if(type!=null){
 					if("GIF".equals(type.toUpperCase())||"PNG".equals(type.toUpperCase())||"JPG".equals(type.toUpperCase())){
-						 String savepath=session.getServletContext().getRealPath("/")+"img"+File.separator;
-						 File tempFile = new File(savepath, new Date().getTime() + "" + (int)(Math.random()*1000)+"."+type);
-						 if (!tempFile.getParentFile().exists()) {  
-					            tempFile.getParentFile().mkdir();  
-					      }  
-					      if (!tempFile.exists()) {  
-					            tempFile.createNewFile();  
-					      }  
-					      file.transferTo(tempFile);
-					      blog.setPicUrl("/blog/img/"+tempFile.getName());
-					      blogService.updateBlog(blog);
+						//图片存储路径
+						String savepath=session.getServletContext().getRealPath("/")+"img"+File.separator;
+						//图片的名称及存储路径
+						File tempFile = new File(savepath, new Date().getTime() + "" + (int)(Math.random()*1000)+"."+type);
+						//若路径不存在，则创建
+						if (!tempFile.getParentFile().exists()) {
+							tempFile.getParentFile().mkdir();
+						}
+						//若文件不存在，则创建
+						if (!tempFile.exists()) {
+					    	tempFile.createNewFile();
+					    }
+						//将图片内容传入新建的文件中
+						file.transferTo(tempFile);
+						//将封面图片路径设定到blog属性中
+					    blog.setPicUrl("/blog/img/"+tempFile.getName());
+					    blogService.updateBlog(blog);
 					}
 				}
 			}
