@@ -34,18 +34,17 @@ public class LoginInterceptor implements HandlerInterceptor {
 		if(url.indexOf("login")>0){
 			return true;
 		}
-		
-		HttpSession session=request.getSession(); 
-		
+		//从session取出用户信息
+		HttpSession session=request.getSession();
 		String username=(String)session.getAttribute("username");
-		
+		//若用户信息不为null，则不拦截
 		if(username!=null){
 			return true;
 		}
-		
+		//若用户信息为null则转发给登录
 		request.getRequestDispatcher("/manager/login").forward(request, response);
-		
-		//不是登录
+		System.out.println("拦截");
+		//拦截
 		return false;
 	}
 

@@ -36,13 +36,14 @@ public class ClickInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest arg0, HttpServletResponse arg1,
 			Object arg2) throws Exception {
 		// TODO Auto-generated method stub
+		//若日期相隔一天，则清空今日访问量，并将新日期记录
+		//不太合理，应强制将获取到的当前日期的年月日取出，将时分秒舍去
 		if((new Date()).getTime()-date.getTime()> (24* 3600000)){
 			date=new Date();
 			infoService.resetTodayClickTimes();
 		}
+		//每次请求都会增加一次访问量
 		infoService.addClickTimes();
-		System.out.println(date.toString());
-		System.out.println(infoService.getInfoById(1).getHistoryClickTimes());
 		return true;
 	}
 
