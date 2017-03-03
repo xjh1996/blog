@@ -13,6 +13,7 @@ import com.test.service.IBlogService;
 import com.test.service.IInfoService;
 
 public class ClickInterceptor implements HandlerInterceptor {
+	//记录访问日期用
 	public static Date date=new Date();
 	@Resource
 	private IInfoService infoService;
