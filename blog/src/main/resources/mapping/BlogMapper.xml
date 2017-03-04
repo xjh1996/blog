@@ -38,20 +38,24 @@
 		where b.id=c.blog_id
 		and b.id=#{id} 
 		and t.id=b.type_id
-  </select> 
-  <select id="findBlogById" parameterType="int" resultMap="BaseResultMap">  
-   		select blog.*,t.id type_id,t.typename type_name from blog,type t where blog.id=#{id} and t.id=blog.type_id
-  </select> 
-   <select id="findBlogByType" parameterType="com.test.bean.Type" resultMap="BaseResultMap">  
-   		select blog.*,t.id type_id,t.typename type_name from blog,type t where blog.type_id=#{id} and t.id=blog.type_id
-  </select> 
-   <select id="getBlogList" resultMap="BaseResultMap">  
-   		select blog.*,t.id type_id,t.typename type_name from blog,type t where t.id=blog.type_id
+  </select>
+    <select id="findBlogById" parameterType="int" resultMap="BaseResultMap">
+        select blog.*,t.id type_id,t.typename type_name from blog,type t where blog.id=#{id} and t.id=blog.type_id order
+        by blog.create_time
+  </select>
+    <select id="findBlogByType" parameterType="com.test.bean.Type" resultMap="BaseResultMap">
+        select blog.*,t.id type_id,t.typename type_name from blog,type t where blog.type_id=#{id} and t.id=blog.type_id
+        order by blog.create_time
+  </select>
+    <select id="getBlogList" resultMap="BaseResultMap">
+        select blog.*,t.id type_id,t.typename type_name from blog,type t where t.id=blog.type_id order by
+        blog.create_time
   </select> 
    <select id="findBlogByWord" parameterType="java.lang.String" resultMap="BaseResultMap">  
    		select blog.*,t.id type_id,t.typename type_name from blog,type t
    		where (blog.content LIKE CONCAT(CONCAT('%', #{text}), '%')
    		or blog.title LIKE CONCAT(CONCAT('%', #{text}), '%')) and t.id=blog.type_id
+       order by blog.create_time
   </select> 
   <delete id="deleteById" parameterType="java.lang.Integer">
     delete from blog

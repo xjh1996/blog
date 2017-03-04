@@ -85,6 +85,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   	<div class="container">
   		<div class="col-md-8">
 		     <c:forEach items="${blogs}" var="s">
+				 <div>
 			  		<a href="<%=path %>/${s.id}"><h1 class="page-header">${s.title}</h1></a>
 			  		<div class="row" style="height: 150px;">
 			  			<div class="col-md-4 col-lg-4 col-sm-6 col-xs-6 left" >
@@ -119,6 +120,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			             	</label>
 			             </div>
 					  </div>
+				 </div>
 		     </c:forEach>
 
 		     <ul class="pagination">
@@ -140,8 +142,8 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   			<object type="application/x-shockwave-flash" style="outline:none;" data="http://cdn.abowman.com/widgets/hamster/hamster.swf?" width="300" height="225"><param name="movie" value="http://cdn.abowman.com/widgets/hamster/hamster.swf?"></param><param name="AllowScriptAccess" value="always"></param><param name="wmode" value="opaque"></param></object>
   			<div style="padding-top: 30px;">
 	            <fieldset>
-	                <div><label>当日请求数：${info.todayClickTimes } 次</label></div>
-	                <div><label>历史请求数：${info.historyClickTimes } 次</label></div>
+					<div><label>当日访问ip数：${info.todayClickTimes } 次</label></div>
+					<div><label>历史访问ip数：${info.historyClickTimes } 次</label></div>
 	            </fieldset>
         	</div>
   		</div>

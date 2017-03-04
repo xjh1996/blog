@@ -1,5 +1,7 @@
 package com.test.bean;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.util.Date;
 import java.util.List;
 
@@ -11,7 +13,7 @@ public class Blog {
     private Type type;
 
     private Integer clickTimes;
-
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     private Integer commentTimes;

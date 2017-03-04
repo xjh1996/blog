@@ -25,6 +25,7 @@
     <include refid="Blob_Column_List" />
     from comment
     where id = #{id,jdbcType=INTEGER}
+    order by comment.create_time
   </select>
   <select id="selectByBlogId" resultMap="ResultMapWithBLOBs" parameterType="java.lang.Integer" >
     select 
@@ -33,6 +34,7 @@
     <include refid="Blob_Column_List" />
     from comment
     where blog_id = #{blogId,jdbcType=INTEGER}
+    order by comment.create_time
   </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
     delete from comment

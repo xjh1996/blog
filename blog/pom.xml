@@ -3,8 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.xjh</groupId>
   <artifactId>test</artifactId>
-  <packaging>war</packaging>
+  <packaging>pom</packaging>
   <version>1.0-SNAPSHOT</version>
+  <modules>
+    <module>../upload</module>
+  </modules>
   <name>test Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <properties>

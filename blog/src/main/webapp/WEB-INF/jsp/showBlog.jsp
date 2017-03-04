@@ -163,7 +163,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 					  	</div>
 					  	<div class="form-group">
 						    <label for="content">文本框</label>
-						    <textarea class="form-control" name="content" rows="5"></textarea>
+							<textarea class="form-control" id="content" name="content" rows="5"></textarea>
 						</div> 
 						<input name="blogId" type="hidden" id="blogId" value="${blog.id}">   
 						<input type="button" onclick="checkInput()" value="提交"> 	

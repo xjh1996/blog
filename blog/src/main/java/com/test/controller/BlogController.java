@@ -77,7 +77,86 @@ public class BlogController {
 		return "index";
 		
 	}
-	
+
+    @RequestMapping("json")
+    public String toJson(Model model) {
+        //获取所有文章种类加入供视图渲染使用
+        List<Type> types = this.typeService.getTypes();
+        //拿到网站相关参数，访问量什么的
+        Info info = this.infoService.getInfoById(1);
+        //将所有要用到的加入model
+        model.addAttribute("info", info);
+        model.addAttribute("types", types);
+        return "json";
+
+    }
+
+    @RequestMapping("json/page/{pageNum}")
+    @ResponseBody
+    public Map<String, Object> getBlogsByPage(@PathVariable("pageNum") Integer pageNum) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        //先拿到所有博客再根据当前页选取
+        List<Blog> blogs = this.blogService.getAllBlogs();
+        int allpages = (blogs.size() / pageCount) + (blogs.size() % pageCount == 0 ? 0 : 1);
+        Collections.reverse(blogs);
+        blogs = blogs.subList((pageNum - 1) * pageCount, pageNum * pageCount > blogs.size() ? blogs.size() : pageNum * pageCount);
+        //将所有要用到的加入model
+        map.put("blogs", blogs);
+        map.put("allpages", allpages);
+        return map;
+    }
+
+    //具体显示某篇博客
+    @RequestMapping(value = "/json/blog/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> getOneBlog(@PathVariable("id") Integer id) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        //获得根据id这篇博客
+        Blog blog = this.blogService.getBlogById(id);
+        //计算一次点击量
+        blog.setClickTimes(blog.getClickTimes() + 1);
+        //获得文章评论
+        List<Comment> comments = commentService.selectByBlogId(blog.getId());
+        //刷新一次博客评论数
+        blog.setCommentTimes(comments.size());
+        this.blogService.updateBlog(blog);
+
+        map.put("blog", blog);
+        map.put("comments", comments);
+        return map;
+    }
+
+    @RequestMapping("/json/type/{id}")
+    @ResponseBody
+    public Map<String, Object> getBlogsByType(@PathVariable("id") Integer id) {
+        Map<String, Object> map = new HashMap<String, Object>();
+        //根据类型id找博客文章
+        Type type = new Type();
+        type.setId(id);
+        List<Blog> blogs = this.blogService.findBlogsByType(type);
+
+        //将所有要用到的加入model
+        map.put("blogs", blogs);
+        //map.put("allpages", allpages);
+        return map;
+    }
+
+    @RequestMapping("/json/searchByWord")
+    @ResponseBody
+    public Map<String, Object> getBlogsByWord(HttpServletRequest request) throws UnsupportedEncodingException {
+        Map<String, Object> map = new HashMap<String, Object>();
+        String word = request.getParameter("word");
+        //System.out.println(request.getParameter("word"));
+        //根据类型id找博客文章
+        //根据关键词查找文章，标题和内容均可
+        List<Blog> blogs = this.blogService.findBlogsByWord(word);
+
+        //将所有要用到的加入model
+        map.put("blogs", blogs);
+        //map.put("allpages", allpages);
+        return map;
+    }
+
 	@RequestMapping("searchByType/{id}")
 	public String toSearchByType(Model model,@PathVariable("id") Integer id){
 		//获取所有文章种类加入供视图渲染使用
@@ -294,9 +373,12 @@ public class BlogController {
 		Blog blog=blogService.getBlogById(id);
 		//登录验证
 		String username=(String)session.getAttribute("username");
-		if(username!=null){
-			if (file!=null) {
-				//得到上传封面文件名
+        System.out.println(request.getParameter("username"));
+        //System.out.println(username!=null);
+        if (username != null) {
+            //System.out.println(file!=null);
+            if (file != null) {
+                //得到上传封面文件名
 				String fileName=file.getOriginalFilename();
 				//得到后缀名
 				String type=fileName.indexOf(".")!=-1?fileName.substring(fileName.lastIndexOf(".")+1, fileName.length()):null;
@@ -305,8 +387,9 @@ public class BlogController {
 					if("GIF".equals(type.toUpperCase())||"PNG".equals(type.toUpperCase())||"JPG".equals(type.toUpperCase())){
 						//图片存储路径
 						String savepath=session.getServletContext().getRealPath("/")+"img"+File.separator;
-						//图片的名称及存储路径
-						File tempFile = new File(savepath, new Date().getTime() + "" + (int)(Math.random()*1000)+"."+type);
+
+                        //图片的名称及存储路径
+                        File tempFile = new File(savepath, new Date().getTime() + "" + (int)(Math.random()*1000)+"."+type);
 						//若路径不存在，则创建
 						if (!tempFile.getParentFile().exists()) {
 							tempFile.getParentFile().mkdir();

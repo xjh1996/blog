@@ -189,7 +189,9 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 							<br>
 							<form action="<%=path %>/imageupload/${s.id}" method="post" enctype="multipart/form-data"  onsubmit="return checkFile(${s.id})">
 						 		选择文件:<input  type="file" name="file" id="file${s.id}">
+								<input type="hidden" value="xjh1996" name="username">
 							 	<input type="submit" class="btn btn-default" value="提交封面">
+
 							</form>
 						</td>
 					
@@ -209,7 +211,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		            <form  class="form-inline" id="mainblog" name="mainblog">
 			            <div class="modal-body">
 				            <div class="form-group">
-								<label for="name">标题</label>
+								<label for="title">标题</label>
 								<input type="text" style="display:inline;" class="form-control" name="title" id="title" placeholder="请输入标题">
 							</div>
 							<br><br>

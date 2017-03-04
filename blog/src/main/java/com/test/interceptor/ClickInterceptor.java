@@ -1,6 +1,9 @@
 package com.test.interceptor;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -13,11 +16,20 @@ import com.test.service.IBlogService;
 import com.test.service.IInfoService;
 
 public class ClickInterceptor implements HandlerInterceptor {
+
+	public static Set<String> ipSet = new HashSet<String>();
 	//记录访问日期用
-	public static Date date=new Date();
+	public static Calendar calendar = Calendar.getInstance();
 	@Resource
 	private IInfoService infoService;
-	
+
+	static {
+		calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+	}
 
 	public void afterCompletion(HttpServletRequest arg0,
 			HttpServletResponse arg1, Object arg2, Exception arg3)
@@ -38,13 +50,23 @@ public class ClickInterceptor implements HandlerInterceptor {
 			Object arg2) throws Exception {
 		// TODO Auto-generated method stub
 		//若日期相隔一天，则清空今日访问量，并将新日期记录
-		//不太合理，应强制将获取到的当前日期的年月日取出，将时分秒舍去
-		if((new Date()).getTime()-date.getTime()> (24* 3600000)){
-			date=new Date();
+		if ((calendar.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) > (86400000)) {
+			calendar = Calendar.getInstance();
+			calendar.set(Calendar.HOUR_OF_DAY, 0);
+			calendar.set(Calendar.SECOND, 0);
+			calendar.set(Calendar.MINUTE, 0);
+			calendar.set(Calendar.MILLISECOND, 0);
 			infoService.resetTodayClickTimes();
+			ipSet.clear();
 		}
-		//每次请求都会增加一次访问量
-		infoService.addClickTimes();
+		String userAddr = arg0.getRemoteAddr();
+		if (!ipSet.contains(userAddr)) {
+			infoService.addClickTimes();
+			ipSet.add(userAddr);
+
+		}
+
+
 		return true;
 	}
 

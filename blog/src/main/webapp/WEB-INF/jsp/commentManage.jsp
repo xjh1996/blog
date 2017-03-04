@@ -75,7 +75,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 			    <c:forEach items="${comments}" var="s">
 			    	<tr>
 			    		<td>${s.id}</td>
-			    		<td>${s.username}</a></td>
+						<td>${s.username}</td>
 						<td>${s.email}</td>
 						<td>${s.createTime}</td>
 						<td>${s.content}</td>
