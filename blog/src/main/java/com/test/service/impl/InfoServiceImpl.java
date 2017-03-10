@@ -16,7 +16,7 @@ public class InfoServiceImpl implements IInfoService {
 
 	@Resource
 	private InfoMapper infoMapper;
-	@Override
+
 	public void addClickTimes() {
 		// TODO Auto-generated method stub
 		Info info=infoMapper.selectByPrimaryKey(1);
@@ -24,12 +24,12 @@ public class InfoServiceImpl implements IInfoService {
 		info.setTodayClickTimes(info.getTodayClickTimes()+1);
 		infoMapper.updateByPrimaryKey(info);
 	}
-	@Override
+
 	public Info getInfoById(Integer id) {
 		// TODO Auto-generated method stub
 		return infoMapper.selectByPrimaryKey(id);
 	}
-	@Override
+
 	public void resetTodayClickTimes() {
 		// TODO Auto-generated method stub
 		Info info=infoMapper.selectByPrimaryKey(1);

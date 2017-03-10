@@ -125,7 +125,7 @@ function putBlogs(parentDiv, blogs) {
         divDate.append(labelDate);
         var divClickTimes = $('<div class="col-md-3 col-lg-3 col-sm-3 col-xs-3 left"></div>');
         var iconClickTimes = $('<span class="glyphicon glyphicon-eye-open" style="color: gray" aria-hidden="true"></span>');
-        var hrefClickTimes = $('<a style="text-decoration:none;" href="#"></a>').text("阅读");
+        var hrefClickTimes = $('<a href="javascript:void(0);" onclick=getBlogById(' + blogs[i].id + ')></a>').text("阅读");
         iconClickTimes.append(hrefClickTimes);
         iconClickTimes.append("（" + blogs[i].clickTimes + "）");
         //iconClickTimes.text(blogs[i].clickTimes);

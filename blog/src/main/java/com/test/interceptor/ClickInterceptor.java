@@ -50,8 +50,8 @@ public class ClickInterceptor implements HandlerInterceptor {
 			Object arg2) throws Exception {
 		// TODO Auto-generated method stub
 		//若日期相隔一天，则清空今日访问量，并将新日期记录
-		if ((calendar.getTimeInMillis() - Calendar.getInstance().getTimeInMillis()) > (86400000)) {
-			calendar = Calendar.getInstance();
+        if ((Calendar.getInstance().getTimeInMillis() - calendar.getTimeInMillis()) > (86400000)) {
+            calendar = Calendar.getInstance();
 			calendar.set(Calendar.HOUR_OF_DAY, 0);
 			calendar.set(Calendar.SECOND, 0);
 			calendar.set(Calendar.MINUTE, 0);
@@ -59,7 +59,8 @@ public class ClickInterceptor implements HandlerInterceptor {
 			infoService.resetTodayClickTimes();
 			ipSet.clear();
 		}
-		String userAddr = arg0.getRemoteAddr();
+        //infoService.resetTodayClickTimes();
+        String userAddr = arg0.getRemoteAddr();
 		if (!ipSet.contains(userAddr)) {
 			infoService.addClickTimes();
 			ipSet.add(userAddr);
